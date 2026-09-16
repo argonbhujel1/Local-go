@@ -1,75 +1,138 @@
-from datetime import datetime
-from enum import Enum
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+from flask_login import login_required, current_user
 from app import db
+from app.models.partner import Partner, PartnerStatus, PartnerService
+from app.models.vehicle import Vehicle, VehicleType
+from app.models.ride import Ride, RideStatus
+from app.models.wallet import Wallet
+from app.services.wallet_service import WalletService
+
+partner_bp = Blueprint("partner", __name__)
 
 
-class PartnerStatus(str, Enum):
-    PENDING = "PENDING"
-    UNDER_REVIEW = "UNDER_REVIEW"
-    APPROVED = "APPROVED"
-    REJECTED = "REJECTED"
-    SUSPENDED = "SUSPENDED"
+def partner_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login"))
+        if not current_user.partner:
+            flash("Please complete partner registration first.", "info")
+            return redirect(url_for("partner.register"))
+        return f(*args, **kwargs)
+    return decorated
 
 
-class Partner(db.Model):
-    __tablename__ = "partners"
+@partner_bp.route("/register", methods=["GET", "POST"])
+@login_required
+def register():
+    if current_user.partner:
+        return redirect(url_for("partner.dashboard"))
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
-    status = db.Column(db.String(20), default=PartnerStatus.PENDING.value, index=True)
-    is_online = db.Column(db.Boolean, default=False, index=True)
-    last_location_lat = db.Column(db.Float)
-    last_location_lng = db.Column(db.Float)
-    last_location_at = db.Column(db.DateTime)
-    citizenship_number = db.Column(db.String(50))
-    citizenship_photo = db.Column(db.String(255))
-    emergency_contact_name = db.Column(db.String(100))
-    emergency_contact_phone = db.Column(db.String(20))
-    bio = db.Column(db.Text)
-    total_jobs = db.Column(db.Integer, default=0)
-    total_earnings = db.Column(db.Numeric(12, 2), default=0)
-    average_rating = db.Column(db.Float, default=0.0)
-    rating_count = db.Column(db.Integer, default=0)
-    rejection_reason = db.Column(db.Text)
-    approved_at = db.Column(db.DateTime)
-    approved_by_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    vehicle_types = VehicleType.query.filter_by(is_active=True).all()
 
-    user = db.relationship("User", foreign_keys=[user_id], back_populates="partner")
-    approved_by = db.relationship("User", foreign_keys=[approved_by_id])
-    vehicles = db.relationship("Vehicle", back_populates="partner", lazy="dynamic")
-    services = db.relationship("PartnerService", back_populates="partner", lazy="dynamic")
-    wallet = db.relationship("Wallet", back_populates="partner", uselist=False)
+    if request.method == "POST":
+        partner = Partner(
+            user_id=current_user.id,
+            status=PartnerStatus.PENDING.value,
+            citizenship_number=request.form.get("citizenship_number"),
+            emergency_contact_name=request.form.get("emergency_contact_name"),
+            emergency_contact_phone=request.form.get("emergency_contact_phone"),
+        )
+        db.session.add(partner)
+        db.session.flush()
 
-    def can_go_online(self) -> bool:
-        if self.status != PartnerStatus.APPROVED.value:
-            return False
-        if self.wallet and self.wallet.balance < 0:
-            from flask import current_app
-            min_bal = current_app.config.get("MIN_WALLET_BALANCE", 0)
-            if float(self.wallet.balance) < min_bal:
-                return False
-        return True
+        vt_id = request.form.get("vehicle_type_id", type=int)
+        if vt_id:
+            vt = db.session.get(VehicleType, vt_id)
+            vehicle = Vehicle(
+                partner_id=partner.id,
+                vehicle_type_id=vt_id,
+                number_plate=request.form.get("number_plate") if vt and vt.requires_number_plate else None,
+                registration_number=request.form.get("registration_number") if vt and vt.requires_registration else None,
+                license_number=request.form.get("license_number") if vt and vt.requires_license else None,
+                color=request.form.get("color"),
+                model=request.form.get("model"),
+            )
+            db.session.add(vehicle)
 
-    def __repr__(self):
-        return f"<Partner {self.id} status={self.status}>"
+            services = request.form.getlist("services")
+            for s in services:
+                ps = PartnerService(partner_id=partner.id, service_type=s, vehicle_type_id=vt_id)
+                db.session.add(ps)
+
+        db.session.commit()
+        WalletService.get_or_create_partner_wallet(partner.id)
+        flash("Partner registration submitted. Awaiting admin approval.", "success")
+        return redirect(url_for("partner.dashboard"))
+
+    return render_template("partner/register.html", vehicle_types=vehicle_types)
 
 
-class PartnerService(db.Model):
-    """Services a partner has opted into (Ride, Food, Parcel, Document, Shop)."""
-    __tablename__ = "partner_services"
-
-    id = db.Column(db.Integer, primary_key=True)
-    partner_id = db.Column(db.Integer, db.ForeignKey("partners.id"), nullable=False)
-    service_type = db.Column(db.String(30), nullable=False)  # RIDE, FOOD, PARCEL, DOCUMENT, SHOP_DELIVERY
-    vehicle_type_id = db.Column(db.Integer, db.ForeignKey("vehicle_types.id"))
-    is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    partner = db.relationship("Partner", back_populates="services")
-    vehicle_type = db.relationship("VehicleType")
-
-    __table_args__ = (
-        db.UniqueConstraint("partner_id", "service_type", "vehicle_type_id", name="uq_partner_service"),
+@partner_bp.route("/dashboard")
+@partner_required
+def dashboard():
+    partner = current_user.partner
+    wallet = WalletService.get_or_create_partner_wallet(partner.id)
+    active_jobs = Ride.query.filter(
+        Ride.partner_id == partner.id,
+        Ride.status.in_([
+            RideStatus.ACCEPTED.value,
+            RideStatus.ARRIVING.value,
+            RideStatus.ARRIVED.value,
+            RideStatus.STARTED.value,
+        ]),
+    ).all()
+    return render_template(
+        "partner/dashboard.html",
+        partner=partner,
+        wallet=wallet,
+        active_jobs=active_jobs,
     )
+
+
+@partner_bp.route("/jobs")
+@partner_required
+def jobs():
+    partner = current_user.partner
+    rides = (
+        Ride.query.filter_by(partner_id=partner.id)
+        .order_by(Ride.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    return render_template("partner/jobs.html", rides=rides)
+
+
+@partner_bp.route("/earnings")
+@partner_required
+def earnings():
+    partner = current_user.partner
+    wallet = WalletService.get_or_create_partner_wallet(partner.id)
+    txs = wallet.transactions.order_by(db.desc("created_at")).limit(50).all()
+    return render_template("partner/earnings.html", wallet=wallet, transactions=txs)
+
+
+@partner_bp.route("/toggle-online", methods=["POST"])
+@partner_required
+def toggle_online():
+    partner = current_user.partner
+    if partner.status != PartnerStatus.APPROVED.value:
+        return jsonify({"ok": False, "error": "Not approved"}), 403
+    if not partner.can_go_online():
+        return jsonify({"ok": False, "error": "Wallet balance too low"}), 400
+    partner.is_online = not partner.is_online
+    db.session.commit()
+    return jsonify({"ok": True, "is_online": partner.is_online})
+
+
+@partner_bp.route("/profile")
+@partner_required
+def profile():
+    return render_template("partner/profile.html", partner=current_user.partner)
+
+
+@partner_bp.route("/messages")
+@partner_required
+def messages():
+    return render_template("partner/messages.html")
