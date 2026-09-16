@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="logo-mark">LocalGo Admin</div>
+    <nav>
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin.settings') }}" class="active">Settings</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <h1>System Settings</h1>
+    <p class="muted">Configure platform fees, GPS retention, wallet thresholds via database SystemSetting model or .env.</p>
+    <div class="card">
+      <p>Default platform fee, min wallet balance, and GPS retention are loaded from config / environment.</p>
+      <p>Admin can expand this page to edit SystemSetting rows.</p>
+    </div>
+  </main>
+</div>
+{% endblock %}

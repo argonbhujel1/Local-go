@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Earnings{% endblock %}
+{% block body_class %}has-bottom-nav{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Earnings</h1>
+  <p class="stat-value">Rs.{{ '%.2f'|format(wallet.balance or 0) }}</p>
+</div>
+{% for t in transactions %}
+  <div class="card">
+    <div class="card-row">
+      <span>{{ t.type }}</span>
+      <strong class="{{ 'text-green' if t.amount > 0 else 'text-red' }}">{{ t.amount }}</strong>
+    </div>
+    <p class="muted small">{{ t.description or t.reference }} · {{ t.created_at.strftime('%d %b') }}</p>
+  </div>
+{% else %}
+  <p class="muted">No transactions yet.</p>
+{% endfor %}
+{% endblock %}
+{% block bottom_nav %}
+<nav class="bottom-nav">
+  <a href="{{ url_for('partner.dashboard') }}"><span>🏠</span>Home</a>
+  <a href="{{ url_for('partner.jobs') }}"><span>📋</span>Jobs</a>
+  <a href="{{ url_for('partner.earnings') }}" class="active"><span>💰</span>Earnings</a>
+  <a href="{{ url_for('partner.messages') }}"><span>💬</span>Messages</a>
+  <a href="{{ url_for('partner.profile') }}"><span>👤</span>Profile</a>
+</nav>
+{% endblock %}

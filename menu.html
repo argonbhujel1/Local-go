@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Menu{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Menu – {{ restaurant.name }}</h1></div>
+{% for i in items %}
+  <div class="card"><strong>{{ i.name }}</strong> · Rs.{{ i.price }} {% if not i.is_available %}(unavailable){% endif %}</div>
+{% else %}
+  <p class="muted">No items yet.</p>
+{% endfor %}
+{% endblock %}

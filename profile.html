@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block body_class %}has-bottom-nav{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{{ current_user.full_name }}</h1>
+  <p class="muted">{{ current_user.phone }}</p>
+</div>
+<div class="card-list">
+  <div class="card"><strong>Referral Code</strong><p>{{ current_user.referral_code or '—' }}</p></div>
+  <a href="{{ url_for('partner.register') }}" class="card link-card">Become a Partner / Driver →</a>
+  <a href="{{ url_for('auth.logout') }}" class="card link-card danger">Logout</a>
+</div>
+{% endblock %}
+
+{% block bottom_nav %}
+<nav class="bottom-nav">
+  <a href="{{ url_for('passenger.dashboard') }}"><span>🏠</span>Home</a>
+  <a href="{{ url_for('passenger.book_ride') }}"><span>🚕</span>Rides</a>
+  <a href="{{ url_for('passenger.orders') }}"><span>📋</span>Orders</a>
+  <a href="{{ url_for('passenger.messages') }}"><span>💬</span>Messages</a>
+  <a href="{{ url_for('passenger.profile') }}" class="active"><span>👤</span>Profile</a>
+</nav>
+{% endblock %}

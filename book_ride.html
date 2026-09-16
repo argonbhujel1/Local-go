@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Book Ride{% endblock %}
+{% block body_class %}has-bottom-nav map-page{% endblock %}
+
+{% block content %}
+<div id="map" class="full-map"></div>
+
+<div class="bottom-sheet" id="booking-sheet">
+  <div class="sheet-handle"></div>
+  <h2>Book a Ride</h2>
+
+  <div class="form-group">
+    <label>Pickup</label>
+    <input type="text" id="pickup-address" placeholder="Current location or search..." readonly>
+    <button type="button" class="btn btn-sm btn-outline" id="use-gps">Use GPS</button>
+  </div>
+  <div class="form-group">
+    <label>Destination</label>
+    <input type="text" id="dest-address" placeholder="Where to?">
+  </div>
+
+  <div class="vehicle-picker">
+    {% for vt in vehicle_types %}
+      <label class="vehicle-option">
+        <input type="radio" name="vehicle_type" value="{{ vt.id }}" data-code="{{ vt.code }}" {% if loop.first %}checked{% endif %}>
+        <span class="vo-icon">{{ vt.icon or '🚗' }}</span>
+        <span class="vo-name">{{ vt.name }}</span>
+        <span class="vo-fare">from Rs.{{ vt.minimum_fare or vt.base_fare }}</span>
+      </label>
+    {% endfor %}
+  </div>
+
+  <div id="fare-preview" class="fare-box hidden">
+    <div class="fare-row"><span>Estimated fare</span><strong id="fare-total">—</strong></div>
+  </div>
+
+  <button type="button" class="btn btn-primary btn-block btn-lg" id="btn-book">Confirm Booking</button>
+</div>
+
+<input type="hidden" id="pickup-lat">
+<input type="hidden" id="pickup-lng">
+<input type="hidden" id="dest-lat">
+<input type="hidden" id="dest-lng">
+{% endblock %}
+
+{% block bottom_nav %}
+<nav class="bottom-nav">
+  <a href="{{ url_for('passenger.dashboard') }}"><span>🏠</span>Home</a>
+  <a href="{{ url_for('passenger.book_ride') }}" class="active"><span>🚕</span>Rides</a>
+  <a href="{{ url_for('passenger.orders') }}"><span>📋</span>Orders</a>
+  <a href="{{ url_for('passenger.messages') }}"><span>💬</span>Messages</a>
+  <a href="{{ url_for('passenger.profile') }}"><span>👤</span>Profile</a>
+</nav>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/ride.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="logo-mark">LocalGo Admin</div>
+    <nav>
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin.users') }}" class="active">Users</a>
+      <a href="{{ url_for('admin.partners') }}">Partners</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <h1>Users</h1>
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Phone</th><th>Joined</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.full_name }}</td>
+          <td>{{ u.phone }}</td>
+          <td>{{ u.created_at.strftime('%d %b %Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</div>
+{% endblock %}

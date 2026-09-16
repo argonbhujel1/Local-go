@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Products</h1></div>
+{% for p in products %}
+  <div class="card"><strong>{{ p.name }}</strong> · Rs.{{ p.price }} · Stock: {{ p.stock }}</div>
+{% else %}
+  <p class="muted">No products.</p>
+{% endfor %}
+{% endblock %}

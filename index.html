@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block body_class %}page-home{% endblock %}
+
+{% block content %}
+<header class="hero">
+  <div class="hero-content">
+    <div class="logo-mark">LocalGo</div>
+    <h1>YOUR LOCAL RIDE &amp; DELIVERY</h1>
+    <p class="tagline">Ride. Eat. Send. Deliver.</p>
+    <p class="hub">Hub: Urlabari · Serving Morang &amp; Jhapa</p>
+  </div>
+</header>
+
+<section class="services-grid">
+  <a href="{{ url_for('passenger.book_ride') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">🚕</span>
+    <span>Ride</span>
+  </a>
+  <a href="{{ url_for('passenger.book_ride') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">🏍</span>
+    <span>Bike Taxi</span>
+  </a>
+  <a href="{{ url_for('passenger.book_ride') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">🚗</span>
+    <span>Car</span>
+  </a>
+  <a href="{{ url_for('passenger.book_ride') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">🛺</span>
+    <span>Auto</span>
+  </a>
+  <a href="{{ url_for('passenger.book_ride') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">🚜</span>
+    <span>Safari</span>
+  </a>
+  <a href="{{ url_for('passenger.book_ride') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">🚲</span>
+    <span>Bicycle</span>
+  </a>
+  <a href="{{ url_for('passenger.food') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">🍔</span>
+    <span>Food</span>
+  </a>
+  <a href="{{ url_for('passenger.send_parcel') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">📦</span>
+    <span>Parcel</span>
+  </a>
+  <a href="{{ url_for('passenger.send_document') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">📄</span>
+    <span>Documents</span>
+  </a>
+  <a href="{{ url_for('passenger.food') if current_user.is_authenticated else url_for('auth.login') }}" class="service-card">
+    <span class="icon">🛍</span>
+    <span>Local Shops</span>
+  </a>
+</section>
+
+<section class="cta-buttons">
+  <a href="{{ url_for('passenger.book_ride') if current_user.is_authenticated else url_for('auth.login') }}" class="btn btn-primary btn-lg">BOOK A RIDE</a>
+  <a href="{{ url_for('passenger.food') if current_user.is_authenticated else url_for('auth.login') }}" class="btn btn-secondary btn-lg">ORDER FOOD</a>
+  <a href="{{ url_for('passenger.send_parcel') if current_user.is_authenticated else url_for('auth.login') }}" class="btn btn-outline btn-lg">SEND PARCEL</a>
+  <a href="{{ url_for('passenger.send_document') if current_user.is_authenticated else url_for('auth.login') }}" class="btn btn-outline btn-lg">SEND DOCUMENT</a>
+</section>
+
+<section class="areas">
+  <h2>Service Areas</h2>
+  <div class="area-chips">
+    {% for m in municipalities %}
+      <span class="chip">{{ m.name.replace(' Municipality','').replace(' Rural Municipality','') }}</span>
+    {% else %}
+      <span class="chip">Urlabari</span>
+      <span class="chip">Kanepokhari</span>
+      <span class="chip">Pathari</span>
+      <span class="chip">Ratuwamai</span>
+      <span class="chip">Miklajung</span>
+      <span class="chip">Damak</span>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="auth-links">
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for('passenger.dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Logout</a>
+  {% else %}
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Login</a>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-outline">Register</a>
+  {% endif %}
+</section>
+
+<footer class="footer">
+  <p>LocalGo Nepal · Urlabari Hub · PWA Ready</p>
+  <p class="small">Install from browser · No Play Store required</p>
+</footer>
+{% endblock %}

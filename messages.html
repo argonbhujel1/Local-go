@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block body_class %}has-bottom-nav{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Messages</h1></div>
+<p class="muted">Chat with drivers and delivery partners appears here during active jobs.</p>
+{% endblock %}
+{% block bottom_nav %}
+<nav class="bottom-nav">
+  <a href="{{ url_for('passenger.dashboard') }}"><span>🏠</span>Home</a>
+  <a href="{{ url_for('passenger.book_ride') }}"><span>🚕</span>Rides</a>
+  <a href="{{ url_for('passenger.orders') }}"><span>📋</span>Orders</a>
+  <a href="{{ url_for('passenger.messages') }}" class="active"><span>💬</span>Messages</a>
+  <a href="{{ url_for('passenger.profile') }}"><span>👤</span>Profile</a>
+</nav>
+{% endblock %}

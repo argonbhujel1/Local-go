@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Municipalities{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="logo-mark">LocalGo Admin</div>
+    <nav>
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin.partners') }}">Partners</a>
+      <a href="{{ url_for('admin.municipalities') }}" class="active">Municipalities</a>
+      <a href="{{ url_for('admin.routes') }}">Routes</a>
+      <a href="{{ url_for('admin.vehicle_types') }}">Vehicle Types</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <h1>Municipalities</h1>
+    <form method="POST" action="{{ url_for('admin.add_municipality') }}" class="form-inline card">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input name="name" placeholder="Name" required>
+      <select name="type"><option>Municipality</option><option>Rural Municipality</option></select>
+      <input name="district" placeholder="District" required>
+      <input name="latitude" placeholder="Lat" type="number" step="any">
+      <input name="longitude" placeholder="Lng" type="number" step="any">
+      <button class="btn btn-primary">Add</button>
+    </form>
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Type</th><th>District</th><th>Serviceable</th></tr></thead>
+      <tbody>
+        {% for m in municipalities %}
+        <tr>
+          <td>{{ m.name }}</td>
+          <td>{{ m.type }}</td>
+          <td>{{ m.district }}</td>
+          <td>{{ 'Yes' if m.is_serviceable else 'No' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</div>
+{% endblock %}

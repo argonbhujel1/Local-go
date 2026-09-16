@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Send Document{% endblock %}
+{% block body_class %}has-bottom-nav{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Document Delivery</h1>
+  <p class="muted">Secure handling for certificates, forms and legal docs</p>
+</div>
+<form id="doc-form" class="form-card">
+  <div class="form-group">
+    <label>Document Type</label>
+    <select name="document_type">
+      <option>Certificates</option>
+      <option>Forms</option>
+      <option>Office documents</option>
+      <option>School documents</option>
+      <option>Legal documents</option>
+      <option>Application documents</option>
+      <option>Business documents</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Pickup Address</label>
+    <input type="text" name="pickup_address" required>
+  </div>
+  <div class="form-group">
+    <label>Delivery Address</label>
+    <input type="text" name="destination_address" required>
+  </div>
+  <div class="form-group">
+    <label>Receiver Name</label>
+    <input type="text" name="receiver_name" required>
+  </div>
+  <div class="form-group">
+    <label>Receiver Phone</label>
+    <input type="tel" name="receiver_phone" required>
+  </div>
+  <div class="form-group">
+    <label>Instructions</label>
+    <textarea name="special_instructions" rows="2"></textarea>
+  </div>
+  <label class="checkbox"><input type="checkbox" name="require_otp" checked> Require OTP confirmation</label>
+  <label class="checkbox"><input type="checkbox" name="require_signature" checked> Require signature</label>
+  <button type="submit" class="btn btn-primary btn-block">Send Document</button>
+</form>
+{% endblock %}
+
+{% block bottom_nav %}
+<nav class="bottom-nav">
+  <a href="{{ url_for('passenger.dashboard') }}"><span>🏠</span>Home</a>
+  <a href="{{ url_for('passenger.book_ride') }}"><span>🚕</span>Rides</a>
+  <a href="{{ url_for('passenger.orders') }}" class="active"><span>📋</span>Orders</a>
+  <a href="{{ url_for('passenger.messages') }}"><span>💬</span>Messages</a>
+  <a href="{{ url_for('passenger.profile') }}"><span>👤</span>Profile</a>
+</nav>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('doc-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
+  data.require_otp = !!fd.get('require_otp');
+  data.require_signature = !!fd.get('require_signature');
+  const res = await fetch('/api/parcels/document', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+    body: JSON.stringify(data)
+  });
+  const json = await res.json();
+  if (json.ok) {
+    alert('Document order created! Tracking: ' + json.tracking_number);
+    location.href = '{{ url_for("passenger.orders") }}';
+  } else alert(json.error || 'Failed');
+});
+</script>
+{% endblock %}

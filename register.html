@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Partner Registration{% endblock %}
+
+{% block content %}
+<div class="page-header"><h1>Become a Partner</h1></div>
+<form method="POST" class="form-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-group">
+    <label>Vehicle Type</label>
+    <select name="vehicle_type_id" id="vt-select" required>
+      {% for vt in vehicle_types %}
+        <option value="{{ vt.id }}" data-plate="{{ vt.requires_number_plate|int }}" data-reg="{{ vt.requires_registration|int }}" data-lic="{{ vt.requires_license|int }}">
+          {{ vt.icon }} {{ vt.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-group" id="fg-plate">
+    <label>Number Plate</label>
+    <input type="text" name="number_plate">
+  </div>
+  <div class="form-group" id="fg-reg">
+    <label>Registration Number</label>
+    <input type="text" name="registration_number">
+  </div>
+  <div class="form-group" id="fg-lic">
+    <label>License Number</label>
+    <input type="text" name="license_number">
+  </div>
+  <div class="form-group">
+    <label>Color / Model</label>
+    <input type="text" name="color" placeholder="Color">
+    <input type="text" name="model" placeholder="Model" style="margin-top:8px">
+  </div>
+  <div class="form-group">
+    <label>Citizenship Number</label>
+    <input type="text" name="citizenship_number">
+  </div>
+  <div class="form-group">
+    <label>Emergency Contact</label>
+    <input type="text" name="emergency_contact_name" placeholder="Name">
+    <input type="tel" name="emergency_contact_phone" placeholder="Phone" style="margin-top:8px">
+  </div>
+  <div class="form-group">
+    <label>Services you want to provide</label>
+    <label class="checkbox"><input type="checkbox" name="services" value="RIDE" checked> Ride</label>
+    <label class="checkbox"><input type="checkbox" name="services" value="FOOD"> Food Delivery</label>
+    <label class="checkbox"><input type="checkbox" name="services" value="PARCEL"> Parcel</label>
+    <label class="checkbox"><input type="checkbox" name="services" value="DOCUMENT"> Document</label>
+  </div>
+  <button type="submit" class="btn btn-primary btn-block">Submit for Approval</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateFields() {
+  const opt = document.querySelector('#vt-select option:checked');
+  document.getElementById('fg-plate').style.display = opt.dataset.plate === '1' ? '' : 'none';
+  document.getElementById('fg-reg').style.display = opt.dataset.reg === '1' ? '' : 'none';
+  document.getElementById('fg-lic').style.display = opt.dataset.lic === '1' ? '' : 'none';
+}
+document.getElementById('vt-select').addEventListener('change', updateFields);
+updateFields();
+</script>
+{% endblock %}

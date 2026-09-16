@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Vehicle Types{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="logo-mark">LocalGo Admin</div>
+    <nav>
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin.vehicle_types') }}" class="active">Vehicle Types</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <h1>Vehicle Types</h1>
+    <p class="muted">Requirements are configurable. Bicycle defaults: no plate / registration / license.</p>
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Plate</th><th>Reg</th><th>License</th><th>Base</th><th>Per KM</th><th>Fee</th></tr></thead>
+      <tbody>
+        {% for v in vehicle_types %}
+        <tr>
+          <td>{{ v.icon }} {{ v.name }}</td>
+          <td>{{ 'Yes' if v.requires_number_plate else 'No' }}</td>
+          <td>{{ 'Yes' if v.requires_registration else 'No' }}</td>
+          <td>{{ 'Yes' if v.requires_license else 'No' }}</td>
+          <td>Rs.{{ v.base_fare }}</td>
+          <td>Rs.{{ v.per_km_fare }}</td>
+          <td>Rs.{{ v.platform_fee }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</div>
+{% endblock %}

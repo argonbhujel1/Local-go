@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Partners{% endblock %}
+{% block content %}
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="logo-mark">LocalGo Admin</div>
+    <nav>
+      <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin.partners') }}" class="active">Partners</a>
+      <a href="{{ url_for('admin.users') }}">Users</a>
+      <a href="{{ url_for('admin.rides') }}">Rides</a>
+      <a href="{{ url_for('admin.municipalities') }}">Municipalities</a>
+      <a href="{{ url_for('admin.routes') }}">Routes</a>
+      <a href="{{ url_for('admin.vehicle_types') }}">Vehicle Types</a>
+      <a href="{{ url_for('admin.settings') }}">Settings</a>
+    </nav>
+  </aside>
+  <main class="admin-main">
+    <h1>Partners</h1>
+    <div class="filters">
+      <a href="?status=PENDING" class="chip">Pending</a>
+      <a href="?status=APPROVED" class="chip">Approved</a>
+      <a href="?" class="chip">All</a>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for p in partners %}
+        <tr>
+          <td>{{ p.user.full_name }}</td>
+          <td>{{ p.user.phone }}</td>
+          <td><span class="badge">{{ p.status }}</span></td>
+          <td>
+            {% if p.status == 'PENDING' or p.status == 'UNDER_REVIEW' %}
+            <form method="POST" action="{{ url_for('admin.approve_partner', pid=p.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-success">Approve</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.reject_partner', pid=p.id) }}" style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline">Reject</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No partners</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</div>
+{% endblock %}
